@@ -7,6 +7,6 @@ Clone the repository and run the script:
 
 ```bash
 git clone https://github.com/venom-x-999/Beutify
-cd Miss-Beuti
+cd Beutify
 chmod +x beutify.sh
 ./beutify.sh
