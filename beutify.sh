@@ -39,13 +39,46 @@ BG_WHITE="\e[47m"
 BOLD="\e[1m"
 RESET="\e[0m"
 
-check_install(){
+SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+COLORS=("\e[1;31m" "\e[1;33m" "\e[1;32m" "\e[1;36m" "\e[1;34m" "\e[1;35m")
+
+spin_wheel() {
+    local pid=$1  # Process ID of the running task
+    local i=0     # Spinner frame index
+    local c=0     # Color index
+
+    while kill -0 "$pid" 2>/dev/null; do
+        echo -ne "\r${COLORS[c]}${SPINNER[i]} \e[1;37mInstalling $2...\e[0m"
+        sleep 0.1
+        ((i=(i+1)%10))
+        ((c=(c+1)%6))
+    done
+
+    echo -e "\r\e[1;32m✔ $2 installed successfully!     \e[0m"
+    sleep 1.5
+}
+
+check_update() {
+    apt update -y > /dev/null 2>&1 && apt upgrade -y > /dev/null 2>&1 &
+    TASK_PID=$!
+    clear
+    echo -e "${YELLOW}Termux updateing & upgrading..${RESET}"
+    spin_wheel "$TASK_PID"   
+}
+
+check_update
+
+check_install() {
     if ! command -v figlet &> /dev/null; then
-        apt install figlet -y
+        apt install figlet -y > /dev/null 2>&1 &
+        TASK_PID=$!
+        spin_wheel "$TASK_PID" "figlet"
     fi
 
     if ! command -v lolcat &> /dev/null; then
-        gem install lolcat
+        gem install lolcat > /dev/null 2>&1 &
+        TASK_PID=$!
+        spin_wheel "$TASK_PID" "lolcat"
     fi
 }
 
@@ -72,7 +105,6 @@ check_internet() {
 
 printBanner(){
     clear
-    echo ""
     
     figlet -f Rectangles BEUTIFY | lolcat
 
@@ -103,6 +135,7 @@ userChoice() {
             ;;
         2) 
             echo -e "${RED}Exiting...${RESET}"
+	    sleep 1
             exit 0
             ;;
         *)
@@ -118,8 +151,8 @@ userChoice() {
 ### styles ps1
 
 PS1_1="\n\[\e[1;37m\]╭──\[\e[1;31m\](root👽kali)\[\e[1;37m\]─[\w]\n\[\e[1;37m\]╰─\[\e[1;31m\]# \[\e[0m\]"
-PS1_2="\n\[\e[1;37m\][DragonShell🐉]-\[\e[1;31m\](\w)\n\[\e[1;37m\]└─> \[\e[0m\]"
-PS1_3="\n\[\e[1;31m\]╔═\[\e[1;37m\][CyberPunk😈]\n\[\e[1;31m\]╚═[\w]➜ \[\e[0m\]"
+PS1_2="\n\[\e[1;37m\][DragonShell🐉]-\[\e[1;31m\](\w)\n\[\e[1;37m\]└─\[\e[1;31m\]➤ \[\e[0m\]"
+PS1_3="\n\[\e[1;31m\]╔═\[\e[1;37m\][CyberPunk😈]\n\[\e[1;31m\]╚═[\w]➠ \[\e[0m\]"
 PS1_4="\n\[\e[1;37m\]──\[\e[1;31m\]{Pentest🔍}\[\e[1;37m\]──[\w]\n\[\e[1;37m\]➜ \[\e[0m\]"
 
 change_font() {
@@ -194,25 +227,29 @@ apply_changes() {
 }
 
 colorful_message() {
-    echo ""
-    msg="Termux homepage and PS1 prompt updated successfully!"
+    clear
+    msg="Termux homepage and PS1 prompt updated!"
     restart_msg="Please restart your Termux."
 
-    for ((i = 0; i < ${#msg}; i++)); do
-        color=$((31 + (i % 7)))  
-        echo -ne "\e[1;${color}m${msg:$i:1}\e[0m"
-        sleep 0.05
-    done
-
-    echo -e "\n\e[1;32m✔ Done!\e[0m"
-    
-    sleep 0.5
-    for ((i = 0; i < ${#restart_msg}; i++)); do
-        color=$((34 + (i % 4)))
-        echo -ne "\e[1;${color}m${restart_msg:$i:1}\e[0m"
-        sleep 0.05
-    done
     echo ""
+
+    for i in {1..3}; do
+        echo -ne "\e[1;32m\e[5m${msg}\e[0m\r"
+        sleep 0.2
+        echo -ne "\r${msg}    \r"
+        sleep 0.2
+    done
+    echo -e "\e[1;32m${msg}\e[0m"
+
+    sleep 1
+
+    for i in {1..3}; do
+        echo -ne "\e[1;33m\e[5m${restart_msg}\e[0m\r"
+        sleep 0.2
+        echo -ne "\r${restart_msg}    \r"
+        sleep 0.2
+    done
+    echo -e "\e[1;33m${restart_msg}\e[0m"
 }
 
 printBanner
