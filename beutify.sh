@@ -69,17 +69,13 @@ check_update() {
 check_update
 
 check_install() {
-    if ! command -v figlet &> /dev/null; then
-        apt install figlet -y > /dev/null 2>&1 &
-        TASK_PID=$!
-        spin_wheel "$TASK_PID" "figlet"
-    fi
-
-    if ! command -v lolcat &> /dev/null; then
-        gem install lolcat > /dev/null 2>&1 &
-        TASK_PID=$!
-        spin_wheel "$TASK_PID" "lolcat"
-    fi
+    apt install figlet -y > /dev/null 2>&1 &
+    TASK_PID=$!
+    spin_wheel "$TASK_PID" "figlet"
+    gem install lolcat > /dev/null 2>&1 &
+    TASK_PID=$!
+    spin_wheel "$TASK_PID" "lolcat"
+   
 }
 
 clear
